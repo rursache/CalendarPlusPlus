@@ -11,16 +11,9 @@ A lightweight macOS menu bar app that shows a slim event list panel pinned to th
 - Opens scrolled to today, with a "Today" button in the top day header to jump back after scrolling
 - Tapping an event reveals it in Calendar.app
 
-## Reading your calendar
+## How?
 
 Calendar++ reads directly from the same local store as Apple's Calendar via EventKit, so every account you already have (iCloud, Google, local) shows up automatically. There is no separate login.
-
-## Settings
-
-Open from the menu bar icon:
-
-- Panel side: Automatic, Left, or Right (with automatic overflow to the other side when there is no room)
-- Panel width: adjustable with a slider
 
 ## Permissions
 
