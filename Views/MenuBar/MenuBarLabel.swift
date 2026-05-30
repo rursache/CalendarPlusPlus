@@ -16,7 +16,6 @@ struct MenuBarLabel: View {
     private static func icon(hasIssue: Bool) -> NSImage {
         let name = hasIssue ? "calendar.badge.exclamationmark" : "calendar"
         let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .regular)
-            .applying(NSImage.SymbolConfiguration(scale: .large))
         let image = NSImage(systemSymbolName: name, accessibilityDescription: "Calendar++")?
             .withSymbolConfiguration(config)
         image?.isTemplate = true
