@@ -7,7 +7,7 @@ struct MenuBarLabel: View {
     let hasIssue: Bool
 
     var body: some View {
-        Image(systemName: hasIssue ? "calendar.badge.exclamationmark" : "calendar.badge.plus")
-            .imageScale(.large)
+        Image(systemName: hasIssue ? "calendar.badge.exclamationmark" : "calendar")
+            .font(.system(size: 18))
     }
 }
