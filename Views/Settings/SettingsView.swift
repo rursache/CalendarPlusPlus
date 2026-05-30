@@ -11,7 +11,11 @@ struct SettingsView: View {
                     ForEach(PanelSide.allCases) { Text($0.displayName).tag($0) }
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                Stepper(
+                    value: $controller.panelWidth,
+                    in: Constants.Layout.minPanelWidth...Constants.Layout.maxPanelWidth,
+                    step: 10
+                ) {
                     HStack {
                         Text("Width")
                         Spacer()
@@ -19,11 +23,6 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
-                    Slider(
-                        value: $controller.panelWidth,
-                        in: Constants.Layout.minPanelWidth...Constants.Layout.maxPanelWidth,
-                        step: 1
-                    )
                 }
             }
 
