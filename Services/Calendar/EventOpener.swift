@@ -6,7 +6,7 @@
 //
 
 import AppKit
-import ApplicationServices
+import CoreGraphics
 
 // Opens the Get Info inspector for a tapped event inside Calendar.app
 enum EventOpener {
@@ -21,9 +21,9 @@ enum EventOpener {
 
         queue.async {
             if let uid, !uid.isEmpty, showEvent(uid: uid, calendarTitle: calendarTitle) {
-                // Let Calendar finish selecting before we reach for the menu
+                // Let Calendar finish selecting and come frontmost before the shortcut
                 Thread.sleep(forTimeInterval: 0.15)
-                _ = openGetInfoViaAX()
+                pressGetInfo()
             } else {
                 openCalendar(toDate: startDate)
             }
@@ -61,27 +61,19 @@ enum EventOpener {
         return result.booleanValue
     }
 
-    // MARK: - Step 2: open Get Info via the Edit menu using the Accessibility permission we already hold
+    // MARK: - Step 2: open Get Info on the selected event with Command-I
 
-    nonisolated private static func openGetInfoViaAX() -> Bool {
-        guard let calApp = NSRunningApplication
-            .runningApplications(withBundleIdentifier: Constants.App.calendarBundleIdentifier).first else { return false }
-
-        let axApp = AXUIElementCreateApplication(calApp.processIdentifier)
-        guard let menuBar = axElement(axApp, kAXMenuBarAttribute),
-              let editItem = axChildren(menuBar)?.first(where: { axTitle($0) == "Edit" }) else { return false }
-
-        AXUIElementPerformAction(editItem, kAXPressAction as CFString)
-        Thread.sleep(forTimeInterval: 0.05)   // let the menu populate
-
-        guard let editMenu = axChildren(editItem)?.first,
-              let getInfo = axChildren(editMenu)?.first(where: { axTitle($0) == "Get Info" }) else {
-            AXUIElementPerformAction(editItem, kAXCancelAction as CFString)
-            return false
-        }
-
-        AXUIElementPerformAction(getInfo, kAXPressAction as CFString)
-        return true
+    // Command-I is Calendar's "Get Info" shortcut (Option-Command-I is the inspector). Posting a key event
+    // uses the Accessibility permission we already hold and avoids fiddly menu traversal
+    nonisolated private static func pressGetInfo() {
+        let source = CGEventSource(stateID: .combinedSessionState)
+        let iKey: CGKeyCode = 34   // kVK_ANSI_I
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: iKey, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: iKey, keyDown: false) else { return }
+        keyDown.flags = .maskCommand
+        keyUp.flags = .maskCommand
+        keyDown.post(tap: .cgSessionEventTap)
+        keyUp.post(tap: .cgSessionEventTap)
     }
 
     // MARK: - Fallback
@@ -96,25 +88,5 @@ enum EventOpener {
 
     nonisolated private static func escape(_ value: String) -> String {
         value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-    }
-
-    nonisolated private static func axElement(_ element: AXUIElement, _ attribute: String) -> AXUIElement? {
-        var ref: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success,
-              let value = ref, CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
-        return (value as! AXUIElement)
-    }
-
-    nonisolated private static func axChildren(_ element: AXUIElement) -> [AXUIElement]? {
-        var ref: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &ref) == .success,
-              let array = ref as? [AXUIElement] else { return nil }
-        return array
-    }
-
-    nonisolated private static func axTitle(_ element: AXUIElement) -> String? {
-        var ref: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &ref) == .success else { return nil }
-        return ref as? String
     }
 }
