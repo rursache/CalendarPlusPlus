@@ -39,6 +39,9 @@ final class CompanionPanel: NSPanel {
 
         let hosting = NSHostingView(rootView: content)
         hosting.translatesAutoresizingMaskIntoConstraints = false
+        // Our edge pins fully determine the frame, so stop the hosting view from deriving
+        // sizing constraints from SwiftUI content. Prevents an Update Constraints loop during scroll
+        hosting.sizingOptions = []
         vibrancy.addSubview(hosting)
 
         // Uniform inner gutter so the list never touches the rounded panel edges
