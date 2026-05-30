@@ -1,0 +1,15 @@
+{
+  "originHash" : "40e01c8ac600b234582bb5ea1eba6af69143a1b97e4ba9e59b381f04c3c73caf",
+  "pins" : [
+    {
+      "identity" : "rsessentials",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RanduSoft/RSEssentials",
+      "state" : {
+        "revision" : "1eb8d292b062df1cea0a1f0c9d4d9249af4fc4fc",
+        "version" : "2.2.7"
+      }
+    }
+  ],
+  "version" : 3
+}
