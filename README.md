@@ -2,6 +2,8 @@
 
 A lightweight macOS menu bar app that shows a slim event list panel pinned to the side of Apple's Calendar app, mirroring the iPad day-list view.
 
+![Calendar++ screenshot](.github/screenshot.jpg)
+
 ## What it does
 
 - Lives in the menu bar (no Dock icon) and shows a floating side panel next to Calendar.app
