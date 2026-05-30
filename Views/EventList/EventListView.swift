@@ -10,31 +10,51 @@ import SwiftUI
 struct EventListView: View {
     let dayGroups: [EventDayGroup]
     var onSelect: (CalendarEvent) -> Void
+    var scrollTrigger: Int = 0
+
+    private var todayID: Date? { dayGroups.first(where: { $0.isToday })?.id }
 
     var body: some View {
-        List {
-            ForEach(dayGroups) { group in
-                Section {
-                    ForEach(group.events) { event in
-                        Button {
-                            onSelect(event)
-                        } label: {
-                            EventRowView(event: event)
+        ScrollViewReader { proxy in
+            List {
+                ForEach(dayGroups) { group in
+                    Section {
+                        ForEach(group.events) { event in
+                            Button {
+                                onSelect(event)
+                            } label: {
+                                EventRowView(event: event)
+                            }
+                            .buttonStyle(.plain)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         }
-                        .buttonStyle(.plain)
-                        .listRowBackground(Color.clear)
+                    } header: {
+                        DayHeaderView(group: group, showTodayButton: !group.isToday) {
+                            scrollToToday(proxy, animated: true)
+                        }
                         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                     }
-                } header: {
-                    DayHeaderView(group: group)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                    .id(group.id)
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .contentMargins(.top, Constants.Layout.eventListTopInset, for: .scrollContent)
+            .background(Color.clear)
+            .onChange(of: scrollTrigger) { scrollToToday(proxy, animated: true) }
+            .onChange(of: todayID) { scrollToToday(proxy, animated: false) }
+            .onAppear { scrollToToday(proxy, animated: false) }
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
-        .contentMargins(.top, Constants.Layout.eventListTopInset, for: .scrollContent)
-        .background(Color.clear)
+    }
+
+    private func scrollToToday(_ proxy: ScrollViewProxy, animated: Bool) {
+        guard let id = todayID else { return }
+        if animated {
+            withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(id, anchor: .top) }
+        } else {
+            proxy.scrollTo(id, anchor: .top)
+        }
     }
 }
 
@@ -42,11 +62,7 @@ struct EventListView: View {
 
 #Preview {
     let calendar = Calendar.current
-
-    // Today
     let today = calendar.startOfDay(for: Date())
-
-    // Tomorrow with events
     let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
 
     let allDayEvent = CalendarEvent(
@@ -90,7 +106,7 @@ struct EventListView: View {
         EventDayGroup(id: tomorrow, date: tomorrow, events: [allDayEvent, standup, designReview])
     ]
 
-    EventListView(dayGroups: dayGroups) { event in
+    return EventListView(dayGroups: dayGroups) { event in
         print("Selected: \(event.title)")
     }
     .frame(width: 320)

@@ -3,13 +3,18 @@ import EventKit
 
 struct PanelRootView: View {
     let service: CalendarService
+    let display: PanelDisplayState
     var onSelect: (CalendarEvent) -> Void
     var onRequestAccess: () -> Void
 
     var body: some View {
         Group {
             if service.authorizationStatus == .fullAccess {
-                EventListView(dayGroups: service.dayGroups, onSelect: onSelect)
+                EventListView(
+                    dayGroups: service.dayGroups,
+                    onSelect: onSelect,
+                    scrollTrigger: display.scrollToTodayToken
+                )
             } else {
                 ContentUnavailableView {
                     Label("Calendar Access Needed", systemImage: "calendar.badge.exclamationmark")
