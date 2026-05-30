@@ -19,3 +19,6 @@ xcuserdata/
 
 # Misc
 *.swp
+
+# CI generates this at release time
+ExportOptions.plist
