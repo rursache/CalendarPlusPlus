@@ -46,9 +46,10 @@ struct EventListView: View {
             .background(Color.clear)
             .coordinateSpace(.named(Self.space))
             .onPreferenceChange(TodayMinYKey.self) { minY in
-                MainActor.assumeIsolated {
-                    let home = Constants.Layout.eventListTopInset
-                    let visible = abs(minY - home) > 24
+                // Defer off the layout pass, mutating state synchronously here re-enters the
+                // window constraint update and trips AppKit's pass limit (crash while scrolling)
+                Task { @MainActor in
+                    let visible = abs(minY - Constants.Layout.eventListTopInset) > 24
                     if visible != todayButtonVisible { todayButtonVisible = visible }
                 }
             }
