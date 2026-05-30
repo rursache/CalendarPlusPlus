@@ -11,6 +11,8 @@ struct MenuBarMenu: View {
                 Button("Open Accessibility Settings") { controller.requestAccessibility() }
             } else if issue == .calendarAccess {
                 Button("Grant Calendar Access") { controller.requestCalendarAccess() }
+            } else if issue == .automation {
+                Button("Grant Automation Access") { controller.requestAutomation() }
             }
             Divider()
         }
