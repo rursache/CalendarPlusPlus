@@ -41,11 +41,13 @@ final class CompanionPanel: NSPanel {
         hosting.translatesAutoresizingMaskIntoConstraints = false
         vibrancy.addSubview(hosting)
 
+        // Uniform inner gutter so the list never touches the rounded panel edges
+        let pad = Constants.Layout.panelContentPadding
         NSLayoutConstraint.activate([
-            hosting.topAnchor.constraint(equalTo: vibrancy.topAnchor),
-            hosting.leadingAnchor.constraint(equalTo: vibrancy.leadingAnchor),
-            hosting.trailingAnchor.constraint(equalTo: vibrancy.trailingAnchor),
-            hosting.bottomAnchor.constraint(equalTo: vibrancy.bottomAnchor)
+            hosting.topAnchor.constraint(equalTo: vibrancy.topAnchor, constant: pad),
+            hosting.leadingAnchor.constraint(equalTo: vibrancy.leadingAnchor, constant: pad),
+            hosting.trailingAnchor.constraint(equalTo: vibrancy.trailingAnchor, constant: -pad),
+            hosting.bottomAnchor.constraint(equalTo: vibrancy.bottomAnchor, constant: -pad)
         ])
     }
 }
