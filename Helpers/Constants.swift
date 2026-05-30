@@ -25,7 +25,8 @@ enum Constants {
         static let maxPanelWidth: CGFloat = 480
         static let panelGap: CGFloat = 8          // gap between Calendar window edge and our panel
         static let eventListTopInset: CGFloat = 4
-        static let contentInset: CGFloat = 16      // horizontal breathing room inside the list
+        static let contentInset: CGFloat = 0       // rows align to the gutter, no extra per row inset
+        static let panelContentPadding: CGFloat = 14  // inner gutter around the whole list, clears the rounded edges
         static let cornerRadius: CGFloat = 16      // rounded panel corners matching macOS Tahoe surfaces
     }
 

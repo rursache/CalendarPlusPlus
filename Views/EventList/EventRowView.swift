@@ -58,7 +58,7 @@ private struct TimedRow: View {
     let event: CalendarEvent
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             // Thin colored bar on leading edge
             RoundedRectangle(cornerRadius: 2)
                 .fill(event.calendarColor)
