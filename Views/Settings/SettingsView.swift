@@ -40,7 +40,12 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 380, height: 320)
-        .onAppear { controller.refreshAutomationStatus() }
+        .background(WindowAccessor { $0?.level = .floating })
+        .onAppear {
+            controller.refreshAutomationStatus()
+            controller.setSettingsPresented(true)
+        }
+        .onDisappear { controller.setSettingsPresented(false) }
     }
 
     @ViewBuilder
@@ -52,4 +57,17 @@ struct SettingsView: View {
             if !granted { Button("Grant", action: action) }
         }
     }
+}
+
+// Reaches the hosting NSWindow so we can keep Settings floating above other apps
+private struct WindowAccessor: NSViewRepresentable {
+    let onResolve: (NSWindow?) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async { onResolve(view.window) }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
 }
