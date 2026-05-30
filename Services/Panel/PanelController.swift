@@ -8,13 +8,22 @@ import SwiftUI
     static let shared = PanelController()
 
     private(set) var issue: PanelIssue?
+    private(set) var automationStatus: AutomationPermission.Status = .notDetermined
     var hasIssue: Bool { issue != nil }
     var calendarAuthorized: Bool { calendarService.authorizationStatus == .fullAccess }
     var accessibilityGranted: Bool { AccessibilityPermission.isGranted }
+    var automationGranted: Bool { automationStatus == .granted }
 
     var panelSide: PanelSide {
         didSet {
             UserDefaults.standard.set(panelSide.rawValue, forKey: Constants.UserDefaultsKeys.panelSide)
+            repositionIfVisible()
+        }
+    }
+
+    var panelWidth: CGFloat {
+        didSet {
+            UserDefaults.standard.set(Double(panelWidth), forKey: Constants.UserDefaultsKeys.panelWidth)
             repositionIfVisible()
         }
     }
@@ -25,10 +34,15 @@ import SwiftUI
     private let panel = CompanionPanel()
     private let displayState = PanelDisplayState()
     private var isPanelVisible = false
+    private var didInitialScroll = false
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.panelSide)
         panelSide = saved.flatMap(PanelSide.init(rawValue:)) ?? .left
+
+        let savedWidth = UserDefaults.standard.double(forKey: Constants.UserDefaultsKeys.panelWidth)
+        panelWidth = savedWidth > 0 ? CGFloat(savedWidth) : Constants.Layout.panelWidth
+
         panel.setContent(PanelRootView(
             service: calendarService,
             display: displayState,
@@ -40,6 +54,7 @@ import SwiftUI
     func start() {
         Task { await loadCalendar() }
         ensureAccessibilityThenTrack()
+        requestAutomationAtStartup()
     }
 
     func requestCalendarAccess() {
@@ -56,7 +71,28 @@ import SwiftUI
         }
     }
 
+    func requestAutomation() {
+        Task {
+            automationStatus = await AutomationPermission.request(launchIfNeeded: true)
+            refreshIssue()
+        }
+    }
+
+    func refreshAutomationStatus() {
+        Task {
+            automationStatus = await AutomationPermission.currentStatus()
+            refreshIssue()
+        }
+    }
+
     // MARK: - Private
+
+    private func requestAutomationAtStartup() {
+        Task {
+            automationStatus = await AutomationPermission.request(launchIfNeeded: false)
+            refreshIssue()
+        }
+    }
 
     private func loadCalendar() async {
         await calendarService.requestAccessAndLoad()
@@ -119,7 +155,7 @@ import SwiftUI
         let result = PanelPlacement.compute(
             calendarFrame: calendarFrame,
             preference: panelSide,
-            panelWidth: Constants.Layout.panelWidth,
+            panelWidth: panelWidth,
             gap: Constants.Layout.panelGap,
             screens: NSScreen.screens
         )
@@ -137,8 +173,11 @@ import SwiftUI
             panel.orderFront(nil)
             panel.invalidateShadow()
             isPanelVisible = true
-            // Jump back to today every time the panel opens
-            displayState.scrollToTodayToken += 1
+            // Scroll to today only on the very first open, keep the user scroll position afterwards
+            if !didInitialScroll {
+                didInitialScroll = true
+                displayState.scrollToTodayToken += 1
+            }
         }
         refreshIssue()
     }
@@ -149,7 +188,7 @@ import SwiftUI
             return
         }
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.16
+            context.duration = 0.10
             context.timingFunction = CAMediaTimingFunction(name: .easeOut)
             context.allowsImplicitAnimation = true
             panel.animator().setFrame(frame, display: true)
@@ -173,6 +212,8 @@ import SwiftUI
             issue = .calendarAccess
         } else if !accessibilityGranted {
             issue = .accessibility
+        } else if automationStatus == .denied {
+            issue = .automation
         } else {
             issue = nil
         }

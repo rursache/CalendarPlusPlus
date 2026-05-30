@@ -20,10 +20,13 @@ enum Constants {
     // MARK: - Layout
 
     enum Layout {
-        static let panelWidth: CGFloat = 320
+        static let panelWidth: CGFloat = 320       // default, user adjustable
+        static let minPanelWidth: CGFloat = 260
+        static let maxPanelWidth: CGFloat = 480
         static let panelGap: CGFloat = 8          // gap between Calendar window edge and our panel
         static let eventListTopInset: CGFloat = 4
-        static let cornerRadius: CGFloat = 12      // rounded panel corners matching macOS Tahoe surfaces
+        static let contentInset: CGFloat = 16      // horizontal breathing room inside the list
+        static let cornerRadius: CGFloat = 16      // rounded panel corners matching macOS Tahoe surfaces
     }
 
     // MARK: - Event Fetch Window
@@ -46,5 +49,6 @@ enum Constants {
     enum UserDefaultsKeys {
         static let hasLaunchedBefore = "hasLaunchedBefore"
         static let panelSide = "panelSide"
+        static let panelWidth = "panelWidth"
     }
 }

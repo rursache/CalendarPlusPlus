@@ -12,6 +12,9 @@ struct EventListView: View {
     var onSelect: (CalendarEvent) -> Void
     var scrollTrigger: Int = 0
 
+    // The day section currently pinned at the top of the viewport
+    @State private var topSectionID: Date?
+
     private var todayID: Date? { dayGroups.first(where: { $0.isToday })?.id }
 
     var body: some View {
@@ -27,13 +30,17 @@ struct EventListView: View {
                             }
                             .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                            .listRowInsets(rowInsets)
                         }
                     } header: {
-                        DayHeaderView(group: group, showTodayButton: !group.isToday) {
+                        DayHeaderView(
+                            group: group,
+                            showTodayButton: group.id == topSectionID && !group.isToday
+                        ) {
                             scrollToToday(proxy, animated: true)
                         }
-                        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                        .listRowInsets(rowInsets)
+                        .background(headerOffsetReader(for: group))
                     }
                     .id(group.id)
                 }
@@ -42,9 +49,29 @@ struct EventListView: View {
             .scrollContentBackground(.hidden)
             .contentMargins(.top, Constants.Layout.eventListTopInset, for: .scrollContent)
             .background(Color.clear)
+            .coordinateSpace(name: Self.coordinateSpace)
+            .onPreferenceChange(SectionTopKey.self) { offsets in
+                let newTop = Self.resolveTopSection(offsets)
+                MainActor.assumeIsolated {
+                    if newTop != topSectionID { topSectionID = newTop }
+                }
+            }
             .onChange(of: scrollTrigger) { scrollToToday(proxy, animated: true) }
             .onChange(of: todayID) { scrollToToday(proxy, animated: false) }
             .onAppear { scrollToToday(proxy, animated: false) }
+        }
+    }
+
+    private var rowInsets: EdgeInsets {
+        EdgeInsets(top: 0, leading: Constants.Layout.contentInset, bottom: 0, trailing: Constants.Layout.contentInset)
+    }
+
+    private func headerOffsetReader(for group: EventDayGroup) -> some View {
+        GeometryReader { geo in
+            Color.clear.preference(
+                key: SectionTopKey.self,
+                value: [group.id: geo.frame(in: .named(Self.coordinateSpace)).minY]
+            )
         }
     }
 
@@ -55,6 +82,22 @@ struct EventListView: View {
         } else {
             proxy.scrollTo(id, anchor: .top)
         }
+    }
+
+    private static let coordinateSpace = "eventList"
+
+    // Topmost section = last header that has reached or passed the top edge, else the first section
+    private static func resolveTopSection(_ offsets: [Date: CGFloat], threshold: CGFloat = 12) -> Date? {
+        let passed = offsets.filter { $0.value <= threshold }
+        if let top = passed.max(by: { $0.value < $1.value }) { return top.key }
+        return offsets.min(by: { $0.value < $1.value })?.key
+    }
+}
+
+private struct SectionTopKey: PreferenceKey {
+    static var defaultValue: [Date: CGFloat] { [:] }
+    static func reduce(value: inout [Date: CGFloat], nextValue: () -> [Date: CGFloat]) {
+        value.merge(nextValue(), uniquingKeysWith: { current, _ in current })
     }
 }
 

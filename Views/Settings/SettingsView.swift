@@ -10,7 +10,23 @@ struct SettingsView: View {
                 Picker("Side", selection: $controller.panelSide) {
                     ForEach(PanelSide.allCases) { Text($0.displayName).tag($0) }
                 }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Width")
+                        Spacer()
+                        Text("\(Int(controller.panelWidth)) pt")
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Slider(
+                        value: $controller.panelWidth,
+                        in: Constants.Layout.minPanelWidth...Constants.Layout.maxPanelWidth,
+                        step: 1
+                    )
+                }
             }
+
             Section("Permissions") {
                 permissionRow(title: "Calendar Access", granted: controller.calendarAuthorized) {
                     controller.requestCalendarAccess()
@@ -18,10 +34,14 @@ struct SettingsView: View {
                 permissionRow(title: "Accessibility", granted: controller.accessibilityGranted) {
                     controller.requestAccessibility()
                 }
+                permissionRow(title: "Automation", granted: controller.automationGranted) {
+                    controller.requestAutomation()
+                }
             }
         }
         .formStyle(.grouped)
-        .frame(width: 380, height: 240)
+        .frame(width: 380, height: 320)
+        .onAppear { controller.refreshAutomationStatus() }
     }
 
     @ViewBuilder
