@@ -17,6 +17,7 @@ final class CalendarService {
     private let store = EKEventStore()
     // Block-based observer token for EKEventStoreChanged, kept for the app lifetime
     private var storeObserver: NSObjectProtocol?
+    private var prefsWatcher: CalendarPreferencesWatcher?
 
     init() {
         storeObserver = NotificationCenter.default.addObserver(
@@ -28,6 +29,12 @@ final class CalendarService {
                 self?.reload()
             }
         }
+
+        // Reload when the user checks or unchecks a calendar in Calendar.app
+        prefsWatcher = CalendarPreferencesWatcher { [weak self] in
+            self?.reload()
+        }
+        prefsWatcher?.start()
     }
 
     func requestAccessAndLoad() async {
@@ -52,8 +59,18 @@ final class CalendarService {
         let start = calendar.date(byAdding: .day, value: -Constants.Fetch.pastDays, to: today)!
         let end = calendar.date(byAdding: .day, value: Constants.Fetch.futureDays, to: today)!
 
-        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
-        let ekEvents = store.events(matching: predicate)
+        // Respect the calendars the user has checked in Calendar.app
+        let disabled = CalendarVisibility.disabledCalendarIdentifiers()
+        let visibleCalendars = store.calendars(for: .event)
+            .filter { !disabled.contains($0.calendarIdentifier) }
+
+        let ekEvents: [EKEvent]
+        if visibleCalendars.isEmpty {
+            ekEvents = []
+        } else {
+            let predicate = store.predicateForEvents(withStart: start, end: end, calendars: visibleCalendars)
+            ekEvents = store.events(matching: predicate)
+        }
 
         let events = ekEvents.map { mapEvent($0) }
 
