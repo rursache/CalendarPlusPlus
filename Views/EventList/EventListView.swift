@@ -12,6 +12,9 @@ struct EventListView: View {
     var onSelect: (CalendarEvent) -> Void
     var scrollTrigger: Int = 0
 
+    // Visibility of the floating Today button, driven by the today header position
+    @State private var todayButtonVisible = false
+
     private var todayID: Date? { dayGroups.first(where: { $0.isToday })?.id }
 
     var body: some View {
@@ -30,10 +33,9 @@ struct EventListView: View {
                             .listRowInsets(rowInsets)
                         }
                     } header: {
-                        DayHeaderView(group: group, showTodayButton: !group.isToday) {
-                            scrollToToday(proxy, animated: true)
-                        }
-                        .listRowInsets(rowInsets)
+                        DayHeaderView(group: group)
+                            .listRowInsets(rowInsets)
+                            .background(todayTracker(for: group))
                     }
                     .id(group.id)
                 }
@@ -42,6 +44,20 @@ struct EventListView: View {
             .scrollContentBackground(.hidden)
             .contentMargins(.top, Constants.Layout.eventListTopInset, for: .scrollContent)
             .background(Color.clear)
+            .coordinateSpace(.named(Self.space))
+            .onPreferenceChange(TodayMinYKey.self) { minY in
+                MainActor.assumeIsolated {
+                    let home = Constants.Layout.eventListTopInset
+                    let visible = abs(minY - home) > 24
+                    if visible != todayButtonVisible { todayButtonVisible = visible }
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                if todayButtonVisible {
+                    todayButton { scrollToToday(proxy, animated: true) }
+                }
+            }
+            .animation(.easeInOut(duration: 0.15), value: todayButtonVisible)
             .onChange(of: scrollTrigger) { scrollToToday(proxy, animated: true) }
             .onChange(of: todayID) { scrollToToday(proxy, animated: false) }
             .onAppear { scrollToToday(proxy, animated: false) }
@@ -52,6 +68,32 @@ struct EventListView: View {
         EdgeInsets(top: 0, leading: Constants.Layout.contentInset, bottom: 0, trailing: Constants.Layout.contentInset)
     }
 
+    private func todayButton(_ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text("Today")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(.ultraThinMaterial, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 4)
+        .transition(.opacity)
+    }
+
+    // Only the today header reports its position, so there is no per row geometry feedback
+    @ViewBuilder
+    private func todayTracker(for group: EventDayGroup) -> some View {
+        if group.isToday {
+            GeometryReader { geo in
+                Color.clear.preference(key: TodayMinYKey.self, value: geo.frame(in: .named(Self.space)).minY)
+            }
+        } else {
+            Color.clear
+        }
+    }
+
     private func scrollToToday(_ proxy: ScrollViewProxy, animated: Bool) {
         guard let id = todayID else { return }
         if animated {
@@ -59,6 +101,17 @@ struct EventListView: View {
         } else {
             proxy.scrollTo(id, anchor: .top)
         }
+    }
+
+    private static let space = "eventList"
+}
+
+// Today header offset, defaults far off screen so the button shows when today is not rendered
+private struct TodayMinYKey: PreferenceKey {
+    static var defaultValue: CGFloat { .greatestFiniteMagnitude }
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        let next = nextValue()
+        if next != .greatestFiniteMagnitude { value = next }
     }
 }
 
@@ -95,22 +148,9 @@ struct EventListView: View {
         conference: .zoom
     )
 
-    let designReview = CalendarEvent(
-        id: "3",
-        externalIdentifier: nil,
-        calendarTitle: "Work",
-        title: "Design Review - CalendarPlusPlus panel UI",
-        startDate: calendar.date(bySettingHour: 14, minute: 30, second: 0, of: tomorrow)!,
-        endDate: calendar.date(bySettingHour: 15, minute: 30, second: 0, of: tomorrow)!,
-        isAllDay: false,
-        calendarColor: .purple,
-        location: "Bucharest HQ, Room 3",
-        conference: nil
-    )
-
     let dayGroups: [EventDayGroup] = [
         EventDayGroup(id: today, date: today, events: []),
-        EventDayGroup(id: tomorrow, date: tomorrow, events: [allDayEvent, standup, designReview])
+        EventDayGroup(id: tomorrow, date: tomorrow, events: [allDayEvent, standup])
     ]
 
     return EventListView(dayGroups: dayGroups) { event in
