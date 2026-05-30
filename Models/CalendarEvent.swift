@@ -11,6 +11,7 @@ import SwiftUI
 struct CalendarEvent: Identifiable, Hashable, Sendable {
     let id: String                   // EKEvent.eventIdentifier
     let externalIdentifier: String?  // EKEvent.calendarItemExternalIdentifier (iCal uid, used for the deep link)
+    let calendarTitle: String        // owning calendar name, used to scope the AppleScript lookup
     let title: String
     let startDate: Date
     let endDate: Date
