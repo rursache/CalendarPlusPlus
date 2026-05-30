@@ -1,5 +1,6 @@
 import AppKit
 import EventKit
+import QuartzCore
 import SwiftUI
 
 @MainActor @Observable final class PanelController {
@@ -22,13 +23,15 @@ import SwiftUI
     private let focusMonitor = AppFocusMonitor()
     private let windowTracker = CalendarWindowTracker()
     private let panel = CompanionPanel()
+    private let displayState = PanelDisplayState()
     private var isPanelVisible = false
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.panelSide)
-        panelSide = saved.flatMap(PanelSide.init(rawValue:)) ?? .auto
+        panelSide = saved.flatMap(PanelSide.init(rawValue:)) ?? .left
         panel.setContent(PanelRootView(
             service: calendarService,
+            display: displayState,
             onSelect: { EventOpener.open($0) },
             onRequestAccess: { [weak self] in self?.requestCalendarAccess() }
         ))
@@ -87,7 +90,7 @@ import SwiftUI
         }
         focusMonitor.start()
 
-        windowTracker.onFrameChange = { [weak self] _ in self?.repositionIfVisible() }
+        windowTracker.onFrameChange = { [weak self] frame in self?.followCalendar(to: frame) }
         windowTracker.onWindowGone = { [weak self] in self?.hidePanel() }
 
         let state = focusMonitor.currentState()
@@ -103,9 +106,18 @@ import SwiftUI
             hidePanel()
             return
         }
+        place(calendarFrame: frame, animated: false)
+    }
 
+    // Live follow during a Calendar window drag, smoothly animated to keep up
+    private func followCalendar(to frame: NSRect) {
+        guard focusMonitor.currentState().isFrontmost else { return }
+        place(calendarFrame: frame, animated: true)
+    }
+
+    private func place(calendarFrame: NSRect, animated: Bool) {
         let result = PanelPlacement.compute(
-            calendarFrame: frame,
+            calendarFrame: calendarFrame,
             preference: panelSide,
             panelWidth: Constants.Layout.panelWidth,
             gap: Constants.Layout.panelGap,
@@ -118,10 +130,30 @@ import SwiftUI
             return
         }
 
-        panel.setFrame(result.frame, display: true)
-        panel.orderFront(nil)
-        isPanelVisible = true
+        let wasVisible = isPanelVisible
+        setPanelFrame(result.frame, animated: animated && wasVisible)
+
+        if !wasVisible {
+            panel.orderFront(nil)
+            panel.invalidateShadow()
+            isPanelVisible = true
+            // Jump back to today every time the panel opens
+            displayState.scrollToTodayToken += 1
+        }
         refreshIssue()
+    }
+
+    private func setPanelFrame(_ frame: NSRect, animated: Bool) {
+        guard animated else {
+            panel.setFrame(frame, display: true)
+            return
+        }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.16
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            context.allowsImplicitAnimation = true
+            panel.animator().setFrame(frame, display: true)
+        }
     }
 
     private func hidePanel() {
@@ -130,8 +162,10 @@ import SwiftUI
     }
 
     private func repositionIfVisible() {
-        guard focusMonitor.currentState().isFrontmost else { return }
-        showPanel()
+        guard isPanelVisible,
+              focusMonitor.currentState().isFrontmost,
+              let frame = windowTracker.currentCalendarFrame() else { return }
+        place(calendarFrame: frame, animated: true)
     }
 
     private func refreshIssue() {

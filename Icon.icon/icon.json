@@ -1,21 +1,18 @@
 {
   "fill" : {
-    "automatic-gradient" : "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+    "automatic-gradient" : "extended-srgb:1.00000,0.21961,0.23529,1.00000"
   },
   "groups" : [
     {
       "layers" : [
         {
-          "fill" : {
-            "automatic-gradient" : "extended-gray:1.00000,1.00000"
-          },
-          "image-name" : "hammer.fill.svg",
-          "name" : "hammer.fill",
+          "image-name" : "calendar.badge.plus.svg",
+          "name" : "calendar.badge.plus",
           "position" : {
             "scale" : 0.9,
             "translation-in-points" : [
-              0.3451661201237357,
-              -0.21769558796586352
+              40.6484375,
+              -0.24825000000009823
             ]
           }
         }

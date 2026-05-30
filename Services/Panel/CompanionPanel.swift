@@ -31,6 +31,10 @@ final class CompanionPanel: NSPanel {
         vibrancy.material = .sidebar
         vibrancy.blendingMode = .behindWindow
         vibrancy.state = .active
+        vibrancy.wantsLayer = true
+        vibrancy.layer?.cornerRadius = Constants.Layout.cornerRadius
+        vibrancy.layer?.cornerCurve = .continuous
+        vibrancy.layer?.masksToBounds = true
         contentView = vibrancy
 
         let hosting = NSHostingView(rootView: content)
