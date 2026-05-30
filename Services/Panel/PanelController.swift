@@ -35,6 +35,7 @@ import SwiftUI
     private let displayState = PanelDisplayState()
     private var isPanelVisible = false
     private var didInitialScroll = false
+    private var settingsPresented = false
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.panelSide)
@@ -85,6 +86,16 @@ import SwiftUI
         }
     }
 
+    // While Settings is open we force the panel visible so width changes preview live
+    func setSettingsPresented(_ presented: Bool) {
+        settingsPresented = presented
+        if presented {
+            showPanel()
+        } else if !focusMonitor.currentState().isFrontmost {
+            hidePanel()
+        }
+    }
+
     // MARK: - Private
 
     private func requestAutomationAtStartup() {
@@ -118,7 +129,10 @@ import SwiftUI
         refreshIssue()
 
         focusMonitor.onActivated = { [weak self] in self?.showPanel() }
-        focusMonitor.onDeactivated = { [weak self] in self?.hidePanel() }
+        focusMonitor.onDeactivated = { [weak self] in
+            guard let self, !self.settingsPresented else { return }
+            self.hidePanel()
+        }
         focusMonitor.onLaunched = { [weak self] pid in self?.windowTracker.start(pid: pid) }
         focusMonitor.onTerminated = { [weak self] in
             self?.windowTracker.stop()
@@ -202,7 +216,7 @@ import SwiftUI
 
     private func repositionIfVisible() {
         guard isPanelVisible,
-              focusMonitor.currentState().isFrontmost,
+              (focusMonitor.currentState().isFrontmost || settingsPresented),
               let frame = windowTracker.currentCalendarFrame() else { return }
         place(calendarFrame: frame, animated: true)
     }
