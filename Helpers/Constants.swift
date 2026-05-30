@@ -27,7 +27,7 @@ enum Constants {
         static let eventListTopInset: CGFloat = 4
         static let contentInset: CGFloat = 4       // rows align to the gutter, no extra per row inset
         static let panelContentPadding: CGFloat = 8  // inner gutter around the whole list, clears the rounded edges
-        static let cornerRadius: CGFloat = 16      // rounded panel corners matching macOS Tahoe surfaces
+        static let cornerRadius: CGFloat = 20      // rounded panel corners matching macOS Tahoe surfaces
     }
 
     // MARK: - Event Fetch Window

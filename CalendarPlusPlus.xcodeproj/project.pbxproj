@@ -31,7 +31,6 @@
 		173078E82F07C2E600A67925 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		173078EC2F07C2E700A67925 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		173078FC2F07C3D200A67925 /* Icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Icon.icon; sourceTree = "<group>"; };
-		17B9680D2F58561F004F6975 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -60,11 +59,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		17B9680E2F58561F004F6975 /* Tests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Tests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,11 +66,6 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				17025CB22FCB5C6000A1FBD4 /* RSEssentials in Frameworks */,
-			);
-		};
-		17B9680A2F58561F004F6975 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			files = (
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -99,7 +88,6 @@
 				178D5D492FA008E20085F3A7 /* Services */,
 				173078F52F07C30300A67925 /* Models */,
 				173078F42F07C2FA00A67925 /* Helpers */,
-				17B9680E2F58561F004F6975 /* Tests */,
 				173078F32F07C2F400A67925 /* SupportiveFiles */,
 				17025CB02FCB5C6000A1FBD4 /* Frameworks */,
 				173078E62F07C2E600A67925 /* Products */,
@@ -109,7 +97,6 @@
 		173078E62F07C2E600A67925 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				17B9680D2F58561F004F6975 /* Tests.xctest */,
 				17025C802FCB5BCB00A1FBD4 /* CalendarPlusPlus.app */,
 			);
 			name = Products;
@@ -143,24 +130,6 @@
 			productReference = 17025C802FCB5BCB00A1FBD4 /* CalendarPlusPlus.app */;
 			productType = "com.apple.product-type.application";
 		};
-		17B9680C2F58561F004F6975 /* Tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 17B968132F58561F004F6975 /* Build configuration list for PBXNativeTarget "Tests" */;
-			buildPhases = (
-				17B968092F58561F004F6975 /* Sources */,
-				17B9680A2F58561F004F6975 /* Frameworks */,
-				17B9680B2F58561F004F6975 /* Resources */,
-			);
-			buildRules = (
-			);
-			fileSystemSynchronizedGroups = (
-				17B9680E2F58561F004F6975 /* Tests */,
-			);
-			name = Tests;
-			productName = Tests;
-			productReference = 17B9680D2F58561F004F6975 /* Tests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -174,10 +143,6 @@
 				TargetAttributes = {
 					17025C7F2FCB5BCB00A1FBD4 = {
 						CreatedOnToolsVersion = 26.5;
-					};
-					17B9680C2F58561F004F6975 = {
-						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 173078E42F07C2E600A67925;
 					};
 				};
 			};
@@ -199,7 +164,6 @@
 			projectRoot = "";
 			targets = (
 				17025C7F2FCB5BCB00A1FBD4 /* CalendarPlusPlus */,
-				17B9680C2F58561F004F6975 /* Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -212,11 +176,6 @@
 				17025CA82FCB5C0300A1FBD4 /* Icon.icon in Resources */,
 			);
 		};
-		17B9680B2F58561F004F6975 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			files = (
-			);
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -224,11 +183,6 @@
 			isa = PBXSourcesBuildPhase;
 			files = (
 				17025CA92FCB5C0800A1FBD4 /* App.swift in Sources */,
-			);
-		};
-		17B968092F58561F004F6975 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			files = (
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -473,60 +427,6 @@
 			};
 			name = Release;
 		};
-		17B968142F58561F004F6975 /* Debug configuration for PBXNativeTarget "Tests" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 3999533L99;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ro.randusoft.calendarplusplus.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalendarPlusPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalendarPlusPlus";
-				XROS_DEPLOYMENT_TARGET = 26.2;
-			};
-			name = Debug;
-		};
-		17B968152F58561F004F6975 /* Release configuration for PBXNativeTarget "Tests" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 3999533L99;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ro.randusoft.calendarplusplus.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalendarPlusPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalendarPlusPlus";
-				XROS_DEPLOYMENT_TARGET = 26.2;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -543,14 +443,6 @@
 			buildConfigurations = (
 				173078EE2F07C2E700A67925 /* Debug configuration for PBXProject "CalendarPlusPlus" */,
 				173078EF2F07C2E700A67925 /* Release configuration for PBXProject "CalendarPlusPlus" */,
-			);
-			defaultConfigurationName = Release;
-		};
-		17B968132F58561F004F6975 /* Build configuration list for PBXNativeTarget "Tests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				17B968142F58561F004F6975 /* Debug configuration for PBXNativeTarget "Tests" */,
-				17B968152F58561F004F6975 /* Release configuration for PBXNativeTarget "Tests" */,
 			);
 			defaultConfigurationName = Release;
 		};
