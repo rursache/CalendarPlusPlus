@@ -97,6 +97,7 @@ final class CalendarService {
         return CalendarEvent(
             id: event.eventIdentifier ?? UUID().uuidString,
             externalIdentifier: event.calendarItemExternalIdentifier,
+            calendarTitle: event.calendar?.title ?? "",
             title: event.title ?? "",
             startDate: event.startDate,
             endDate: event.endDate,

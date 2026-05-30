@@ -14,7 +14,7 @@ enum Constants {
     enum App {
         static let name = "CalendarPlusPlus"
         static let bundleIdentifier = Bundle.main.bundleIdentifier!
-        static let calendarBundleIdentifier = "com.apple.iCal"
+        nonisolated static let calendarBundleIdentifier = "com.apple.iCal"
     }
 
     // MARK: - Layout
