@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Calendar++ reads your events so it can show them in the side panel next to the Calendar app</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Calendar++ uses automation to reveal the event you tap inside the Calendar app</string>
+</dict>
+</plist>
