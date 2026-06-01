@@ -75,8 +75,10 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=macOS' \
             -archivePath "$RUNNER_TEMP/CalendarPlusPlus.xcarchive" \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=3999533L99
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            DEVELOPMENT_TEAM=3999533L99 \
+            PROVISIONING_PROFILE_SPECIFIER=""
 
       - name: Generate ExportOptions.plist
         run: |
@@ -90,7 +92,9 @@ jobs:
           <key>teamID</key>
           <string>3999533L99</string>
           <key>signingStyle</key>
-          <string>automatic</string>
+          <string>manual</string>
+          <key>signingCertificate</key>
+          <string>Developer ID Application</string>
           <key>stripSwiftSymbols</key>
           <true/>
           </dict>
