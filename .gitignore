@@ -22,3 +22,6 @@ xcuserdata/
 
 # CI generates this at release time
 ExportOptions.plist
+
+# Local Claude Code state
+.claude/

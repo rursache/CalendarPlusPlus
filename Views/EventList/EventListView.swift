@@ -35,7 +35,7 @@ struct EventListView: View {
                     } header: {
                         DayHeaderView(group: group)
                             .listRowInsets(rowInsets)
-                            .background(todayTracker(for: group))
+                            .background(sectionTracker(for: group))
                     }
                     .id(group.id)
                 }
@@ -45,11 +45,18 @@ struct EventListView: View {
             .contentMargins(.top, Constants.Layout.eventListTopInset, for: .scrollContent)
             .background(Color.clear)
             .coordinateSpace(.named(Self.space))
-            .onPreferenceChange(TodayMinYKey.self) { minY in
-                // Defer off the layout pass, mutating state synchronously here re-enters the
-                // window constraint update and trips AppKit's pass limit (crash while scrolling)
+            .onPreferenceChange(FirstVisibleSectionKey.self) { anchor in
+                // Defer off the layout pass — synchronous state mutation here re-enters AppKit's
+                // window constraint update and trips the pass limit (crash while scrolling)
                 Task { @MainActor in
-                    let visible = abs(minY - Constants.Layout.eventListTopInset) > 24
+                    let visible: Bool
+                    if let anchor {
+                        let atTop = abs(anchor.minY - Constants.Layout.eventListTopInset) <= 24
+                                 && Calendar.current.isDateInToday(anchor.date)
+                        visible = !atTop
+                    } else {
+                        visible = false
+                    }
                     if visible != todayButtonVisible { todayButtonVisible = visible }
                 }
             }
@@ -83,15 +90,13 @@ struct EventListView: View {
         .transition(.opacity)
     }
 
-    // Only the today header reports its position, so there is no per row geometry feedback
-    @ViewBuilder
-    private func todayTracker(for group: EventDayGroup) -> some View {
-        if group.isToday {
-            GeometryReader { geo in
-                Color.clear.preference(key: TodayMinYKey.self, value: geo.frame(in: .named(Self.space)).minY)
-            }
-        } else {
-            Color.clear
+    // Attached to every section header; provides (date, minY) for topmost-visible-section computation
+    private func sectionTracker(for group: EventDayGroup) -> some View {
+        GeometryReader { geo in
+            Color.clear.preference(
+                key: FirstVisibleSectionKey.self,
+                value: SectionAnchor(date: group.date, minY: geo.frame(in: .named(Self.space)).minY)
+            )
         }
     }
 
@@ -107,12 +112,26 @@ struct EventListView: View {
     private static let space = "eventList"
 }
 
-// Today header offset, defaults far off screen so the button shows when today is not rendered
-private struct TodayMinYKey: PreferenceKey {
-    static var defaultValue: CGFloat { .greatestFiniteMagnitude }
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        let next = nextValue()
-        if next != .greatestFiniteMagnitude { value = next }
+private struct SectionAnchor: Equatable {
+    let date: Date
+    let minY: CGFloat
+}
+
+// Accumulates (date, minY) from every rendered section header; reduce() keeps the topmost visible one
+private struct FirstVisibleSectionKey: PreferenceKey {
+    static var defaultValue: SectionAnchor? { nil }
+    static func reduce(value: inout SectionAnchor?, nextValue: () -> SectionAnchor?) {
+        guard let next = nextValue() else { return }
+        guard let current = value else { value = next; return }
+        let threshold = Constants.Layout.eventListTopInset + 24
+        let curOnScreen = current.minY <= threshold
+        let nextOnScreen = next.minY <= threshold
+        switch (curOnScreen, nextOnScreen) {
+        case (true, true):   value = current.minY >= next.minY ? current : next
+        case (true, false):  value = current
+        case (false, true):  value = next
+        case (false, false): value = current.minY <= next.minY ? current : next
+        }
     }
 }
 
