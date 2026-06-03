@@ -20,12 +20,6 @@ struct MenuBarMenu: View {
             Divider()
         }
 
-        Picker("Panel Side", selection: $controller.panelSide) {
-            ForEach(PanelSide.allCases) { side in
-                Text(side.displayName).tag(side)
-            }
-        }
-
         Button("Open Calendar") { controller.openCalendarApp() }
 
         Divider()

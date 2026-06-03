@@ -30,6 +30,7 @@ struct CalendarPlusPlusApp: App {
         Settings {
             SettingsView(controller: controller)
         }
+        .windowResizability(.contentSize)
     }
 }
 
