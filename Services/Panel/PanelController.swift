@@ -1,6 +1,7 @@
 import AppKit
 import EventKit
 import QuartzCore
+import ServiceManagement
 import SwiftUI
 
 @MainActor @Observable final class PanelController {
@@ -28,6 +29,14 @@ import SwiftUI
         }
     }
 
+    // Backed by the system login-item record, not UserDefaults, so it stays in sync with System Settings
+    var launchAtLogin: Bool {
+        didSet {
+            guard launchAtLogin != oldValue else { return }
+            applyLaunchAtLogin(launchAtLogin)
+        }
+    }
+
     private let calendarService = CalendarService()
     private let focusMonitor = AppFocusMonitor()
     private let windowTracker = CalendarWindowTracker()
@@ -43,6 +52,15 @@ import SwiftUI
 
         let savedWidth = UserDefaults.standard.double(forKey: Constants.UserDefaultsKeys.panelWidth)
         panelWidth = savedWidth > 0 ? CGFloat(savedWidth) : Constants.Layout.panelWidth
+
+        // Default to launching at login on first run, then let the user decide
+        if !UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasLaunchedBefore) {
+            UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasLaunchedBefore)
+            if SMAppService.mainApp.status == .notRegistered {
+                try? SMAppService.mainApp.register()
+            }
+        }
+        launchAtLogin = SMAppService.mainApp.status == .enabled
 
         panel.setContent(PanelRootView(
             service: calendarService,
@@ -86,6 +104,11 @@ import SwiftUI
         }
     }
 
+    // Re-sync with the real login-item record in case it was toggled in System Settings
+    func refreshLaunchAtLogin() {
+        launchAtLogin = SMAppService.mainApp.status == .enabled
+    }
+
     // While Settings is open we force the panel visible so width changes preview live
     func setSettingsPresented(_ presented: Bool) {
         settingsPresented = presented
@@ -97,6 +120,20 @@ import SwiftUI
     }
 
     // MARK: - Private
+
+    private func applyLaunchAtLogin(_ enabled: Bool) {
+        do {
+            let service = SMAppService.mainApp
+            if enabled {
+                if service.status != .enabled { try service.register() }
+            } else {
+                if service.status == .enabled { try service.unregister() }
+            }
+        } catch {
+            // Snap the toggle back to whatever the system actually reports
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+        }
+    }
 
     private func requestAutomationAtStartup() {
         Task {

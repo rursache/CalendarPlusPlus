@@ -6,6 +6,10 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section("General") {
+                Toggle("Start at Login", isOn: $controller.launchAtLogin)
+            }
+
             Section("Panel") {
                 Picker("Side", selection: $controller.panelSide) {
                     ForEach(PanelSide.allCases) { Text($0.displayName).tag($0) }
@@ -43,6 +47,7 @@ struct SettingsView: View {
         .background(WindowAccessor { $0?.level = .floating })
         .onAppear {
             controller.refreshAutomationStatus()
+            controller.refreshLaunchAtLogin()
             controller.setSettingsPresented(true)
         }
         .onDisappear { controller.setSettingsPresented(false) }
