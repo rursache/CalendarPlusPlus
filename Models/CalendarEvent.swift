@@ -22,7 +22,9 @@ struct CalendarEvent: Identifiable, Hashable, Sendable {
 }
 
 enum ConferenceProvider: String, Hashable, Sendable, CaseIterable {
-    case zoom, meet, teams, webex, facetime, skype, generic
+    case zoom, meet, teams, webex, facetime, skype
+    case jitsi, whereby, chime, goto, bluejeans, discord, slack, around, gather
+    case generic
 
     var displayName: String {
         switch self {
@@ -32,6 +34,15 @@ enum ConferenceProvider: String, Hashable, Sendable, CaseIterable {
             case .webex: "Webex"
             case .facetime: "FaceTime"
             case .skype: "Skype"
+            case .jitsi: "Jitsi"
+            case .whereby: "Whereby"
+            case .chime: "Chime"
+            case .goto: "GoTo"
+            case .bluejeans: "BlueJeans"
+            case .discord: "Discord"
+            case .slack: "Slack"
+            case .around: "Around"
+            case .gather: "Gather"
             case .generic: "Video"
         }
     }
