@@ -9,13 +9,17 @@ import SwiftUI
 
 struct EventRowView: View {
     let event: CalendarEvent
+    var isPast: Bool = false
 
     var body: some View {
-        if event.isAllDay {
-            AllDayRow(event: event)
-        } else {
-            TimedRow(event: event)
+        Group {
+            if event.isAllDay {
+                AllDayRow(event: event)
+            } else {
+                TimedRow(event: event)
+            }
         }
+        .opacity(isPast ? Constants.Layout.pastEventOpacity : 1)
     }
 }
 

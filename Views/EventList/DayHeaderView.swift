@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DayHeaderView: View {
     let group: EventDayGroup
+    var isPast: Bool = false
     var showTodayButton: Bool = false
     var onToday: (() -> Void)?
 
@@ -23,6 +24,7 @@ struct DayHeaderView: View {
                     .font(.system(size: 13))
                     .foregroundStyle(group.isToday ? Color.accentColor : Color.secondary)
             }
+            .opacity(isPast ? Constants.Layout.pastEventOpacity : 1)
 
             Spacer(minLength: 8)
 

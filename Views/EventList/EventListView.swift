@@ -18,6 +18,13 @@ struct EventListView: View {
     private var todayID: Date? { dayGroups.first(where: { $0.isToday })?.id }
 
     var body: some View {
+        // Minute ticks keep the past-event dimming current while the panel stays open
+        TimelineView(.everyMinute) { timeline in
+            eventList(now: timeline.date)
+        }
+    }
+
+    private func eventList(now: Date) -> some View {
         ScrollViewReader { proxy in
             List {
                 ForEach(dayGroups) { group in
@@ -26,14 +33,14 @@ struct EventListView: View {
                             Button {
                                 onSelect(event)
                             } label: {
-                                EventRowView(event: event)
+                                EventRowView(event: event, isPast: isPast(event, in: group, now: now))
                             }
                             .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
                             .listRowInsets(rowInsets)
                         }
                     } header: {
-                        DayHeaderView(group: group)
+                        DayHeaderView(group: group, isPast: isPastDay(group, now: now))
                             .listRowInsets(rowInsets)
                             .background(sectionTracker(for: group))
                     }
@@ -100,6 +107,17 @@ struct EventListView: View {
         }
     }
 
+    // Ended events dim out; all-day events only once their whole day is over, so today's stay normal
+    private func isPast(_ event: CalendarEvent, in group: EventDayGroup, now: Date) -> Bool {
+        if isPastDay(group, now: now) { return true }
+        guard group.isToday, !event.isAllDay else { return false }
+        return event.endDate <= now
+    }
+
+    private func isPastDay(_ group: EventDayGroup, now: Date) -> Bool {
+        group.date < Calendar.current.startOfDay(for: now)
+    }
+
     private func scrollToToday(_ proxy: ScrollViewProxy, animated: Bool) {
         guard let id = todayID else { return }
         if animated {
@@ -141,6 +159,33 @@ private struct FirstVisibleSectionKey: PreferenceKey {
     let calendar = Calendar.current
     let today = calendar.startOfDay(for: Date())
     let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
+    let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+
+    let pastEvent = CalendarEvent(
+        id: "0",
+        externalIdentifier: nil,
+        calendarTitle: "Work",
+        title: "Yesterday's Review",
+        startDate: calendar.date(bySettingHour: 15, minute: 0, second: 0, of: yesterday)!,
+        endDate: calendar.date(bySettingHour: 16, minute: 0, second: 0, of: yesterday)!,
+        isAllDay: false,
+        calendarColor: .purple,
+        location: nil,
+        conference: nil
+    )
+
+    let earlyToday = CalendarEvent(
+        id: "3",
+        externalIdentifier: nil,
+        calendarTitle: "Personal",
+        title: "Morning Workout",
+        startDate: calendar.date(bySettingHour: 0, minute: 5, second: 0, of: today)!,
+        endDate: calendar.date(bySettingHour: 0, minute: 10, second: 0, of: today)!,
+        isAllDay: false,
+        calendarColor: .green,
+        location: "Gym",
+        conference: nil
+    )
 
     let allDayEvent = CalendarEvent(
         id: "1",
@@ -169,7 +214,8 @@ private struct FirstVisibleSectionKey: PreferenceKey {
     )
 
     let dayGroups: [EventDayGroup] = [
-        EventDayGroup(id: today, date: today, events: []),
+        EventDayGroup(id: yesterday, date: yesterday, events: [pastEvent]),
+        EventDayGroup(id: today, date: today, events: [earlyToday]),
         EventDayGroup(id: tomorrow, date: tomorrow, events: [allDayEvent, standup])
     ]
 
