@@ -74,6 +74,7 @@ jobs:
         uses: ./.signing
         with:
           app-path: build/Build/Products/Release/CalendarPlusPlus.app
+          entitlements: SupportiveFiles/App.entitlements
 
       - name: Package .app into a zip
         id: pkg
