@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure git auth for private SPM dependencies
         env:
@@ -64,7 +64,7 @@ jobs:
           git config --global --remove-section "url.https://x-access-token:${TOKEN}@github.com/" 2>/dev/null || true
 
       - name: Fetch signing toolkit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: RanduSoft/macos-signing
           token: ${{ secrets.SIGNING_PAT }}
@@ -89,7 +89,7 @@ jobs:
           ls -la "$ZIP" checksums.txt
 
       - name: Upload artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           files: |
@@ -97,7 +97,7 @@ jobs:
             checksums.txt
 
       - name: Trigger Homebrew tap update
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.TAP_GITHUB_TOKEN }}
           script: |
