@@ -13,9 +13,6 @@ struct CalendarPlusPlusApp: App {
     @State private var controller = PanelController.shared
 
     init() {
-        // Before any date formatting: undo TZ inherited from launchers (e.g. Raycast sets TZ=UTC)
-        TimeZoneBootstrap.ensureSystemTimeZone()
-
         RSEssentialsEngine.shared.setup(
             loggerConfig: .init(),
             updateCheckConfig: .init(),
