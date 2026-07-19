@@ -16,7 +16,8 @@ struct DayHeaderView: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(Self.headerDateFormatter.string(from: group.date))
+                // Locale-aware weekday + month/day (order and names follow the user)
+                Text(group.date, format: Self.headerFormat)
                     .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(group.isToday ? Color.accentColor : Color.primary)
 
@@ -50,11 +51,9 @@ struct DayHeaderView: View {
         return "W\(week)"
     }
 
-    // "Saturday - May 31" using a hyphen to avoid em-dash issues
-    private static let headerDateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US")
-        f.dateFormat = "EEEE - MMM d"
-        return f
-    }()
+    // e.g. en: "Sunday, Jul 19" · ro: "duminică, 19 iul." (system decides order and separators)
+    private static let headerFormat = Date.FormatStyle()
+        .weekday(.wide)
+        .month(.abbreviated)
+        .day()
 }

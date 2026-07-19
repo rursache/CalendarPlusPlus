@@ -86,12 +86,13 @@ private struct TimedRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             // Start / end time stack on trailing edge
+            // FormatStyle follows the user's locale (12h/24h, separators) and current time zone
             VStack(alignment: .trailing, spacing: 1) {
-                Text(EventRowView.timeFormatter.string(from: event.startDate))
+                Text(event.startDate, format: EventRowView.timeFormat)
                     .font(.system(size: 15))
                     .foregroundStyle(Color.primary)
 
-                Text(EventRowView.timeFormatter.string(from: event.endDate))
+                Text(event.endDate, format: EventRowView.timeFormat)
                     .font(.system(size: 13))
                     .foregroundStyle(Color.secondary)
             }
@@ -133,12 +134,9 @@ private struct LocationLabel: View {
     }
 }
 
-// MARK: - Shared formatter
+// MARK: - Shared format
 
 extension EventRowView {
-    fileprivate static let timeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        return f
-    }()
+    // Locale-aware short time (honours 12h/24h and region). No fixed format string / forced locale.
+    fileprivate static let timeFormat = Date.FormatStyle(date: .omitted, time: .shortened)
 }
