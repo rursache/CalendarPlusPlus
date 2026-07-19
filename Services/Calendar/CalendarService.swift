@@ -74,11 +74,12 @@ final class CalendarService {
 
         let events = ekEvents.map { mapEvent($0) }
 
-        // Build a dict keyed by start-of-day
+        // Expand multi-day events onto every calendar day they overlap (all-day ends are exclusive)
         var grouped: [Date: [CalendarEvent]] = [:]
         for event in events {
-            let day = calendar.startOfDay(for: event.startDate)
-            grouped[day, default: []].append(event)
+            for day in Self.daysOverlapping(event, calendar: calendar, from: start, to: end) {
+                grouped[day, default: []].append(event)
+            }
         }
 
         // Always include today even with no events
@@ -96,6 +97,31 @@ final class CalendarService {
         let allDay = events.filter { $0.isAllDay }.sorted { $0.startDate < $1.startDate }
         let timed = events.filter { !$0.isAllDay }.sorted { $0.startDate < $1.startDate }
         return allDay + timed
+    }
+
+    // Calendar days in [from, to) that the event covers. All-day EventKit ends are exclusive
+    // (a 1-day all-day on Jul 20 has end = Jul 21 00:00 and only lands on Jul 20).
+    private static func daysOverlapping(
+        _ event: CalendarEvent,
+        calendar: Calendar,
+        from rangeStart: Date,
+        to rangeEnd: Date
+    ) -> [Date] {
+        guard event.endDate > rangeStart, event.startDate < rangeEnd else { return [] }
+
+        let eventFirstDay = calendar.startOfDay(for: event.startDate)
+        var day = eventFirstDay < rangeStart ? rangeStart : eventFirstDay
+        var days: [Date] = []
+
+        while day < rangeEnd {
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: day)!
+            if event.startDate < dayEnd && event.endDate > day {
+                days.append(day)
+            }
+            if event.endDate <= dayEnd { break }
+            day = dayEnd
+        }
+        return days
     }
 
     // MARK: - Private helpers
